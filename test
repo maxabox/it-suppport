@@ -1,0 +1,142 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class GameController : MonoBehaviour
+{
+    public Text ticketCounter;
+    public Text balanceText;
+    public Text technicianCounter;
+    public Text customerCounter;
+    public Button solveTicketButton;
+    public Button hireTechnicianButton;
+    public Button youtubeButton;
+    public Button facebookButton;
+    public Button linkedinButton;
+    public int ticketCost = 50;
+    public int technicianCost = 500;
+    public int youtubeCost = 100;
+    public int facebookCost = 500;
+    public int linkedinCost = 900;
+    public int ticketCount = 0;
+    public int balance = 0;
+    public int technicianCount = 0;
+    public int customerCount = 5;
+    public int ticketsToNewCustomer = 10;
+    public int marketingLevel = 0;
+    public float ticketGenerationInterval = 5f; // in seconds
+    private float timeSinceLastTicketGeneration = 0f;
+    private bool technicianIsBusy = false;
+    private float timeSinceLastTicketSolved = 0f;
+    private float technicianTicketSolveTime = 2f; // in seconds
+
+    void Start()
+    {
+        UpdateUI();
+    }
+
+    void Update()
+    {
+        // Generate tickets for each customer at a specific interval
+        timeSinceLastTicketGeneration += Time.deltaTime;
+        if (timeSinceLastTicketGeneration >= ticketGenerationInterval)
+        {
+            timeSinceLastTicketGeneration = 0f;
+            for (int i = 0; i < customerCount; i++)
+            {
+                ticketCount++;
+            }
+            UpdateUI();
+        }
+
+        if (ticketCount >= ticketsToNewCustomer)
+        {
+            ticketCount -= ticketsToNewCustomer;
+            customerCount++;
+            UpdateUI();
+        }
+
+        if (technicianIsBusy)
+        {
+            timeSinceLastTicketSolved += Time.deltaTime;
+            if (timeSinceLastTicketSolved >= technicianTicketSolveTime)
+            {
+                technicianIsBusy = false;
+                timeSinceLastTicketSolved = 0f;
+            }
+        }
+    }
+
+    public void SolveTicket()
+    {
+        if (!technicianIsBusy)
+        {
+            ticketCount--;
+            balance += ticketCost;
+            UpdateUI();
+            if (technicianCount > 0)
+            {
+                technicianIsBusy = true;
+                technicianCount--;
+            }
+        }
+    }
+
+    public void HireTechnician()
+    {
+        if (balance >= technicianCost)
+        {
+            balance -= technicianCost;
+            technicianCount++;
+            hireTechnicianButton.interactable = false;
+            youtubeButton.interactable = true;
+            marketingLevel = 1;
+            UpdateUI();
+        }
+    }
+
+    public void BuyYoutubeAd()
+    {
+        if (balance >= youtubeCost && marketingLevel >= 1)
+        {
+            balance -= youtubeCost;
+            customerCount += 2;
+            UpdateUI();
+        }
+    }
+
+    public void BuyFacebookAd()
+    {
+        if (balance >= facebookCost && marketingLevel >= 2)
+        {
+            balance -= facebookCost;
+            customerCount += 5;
+            UpdateUI();
+        }
+    }
+
+    public void BuyLinkedinAd()
+    {
+        if (balance >= linkedinCost && marketingLevel >= 3)
+        {
+            balance -= linkedinCost;
+            customerCount += 10;
+            UpdateUI();
+        }
+    }
+
+    void UpdateUI()
+    {
+        ticketCounter.text = "Tickets: " + ticketCount;
+        balanceText.text = "Balance: " + balance.ToString("€0");
+        technicianCounter.text = "Technicians: " + technicianCount;
+       customerCounter.text = "Customers: " + customerCount;
+solveTicketButton.interactable = (ticketCount > 0 && !technicianIsBusy);
+hireTechnicianButton.interactable = (balance >= technicianCost);
+youtubeButton.interactable = (balance >= youtubeCost && marketingLevel == 0);
+facebookButton.interactable = (balance >= facebookCost && marketingLevel == 1);
+linkedinButton.interactable = (balance >= linkedinCost && marketingLevel == 2);
+}
+}
+
